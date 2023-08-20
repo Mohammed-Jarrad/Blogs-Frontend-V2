@@ -1,55 +1,53 @@
-import { useEffect } from "react"
-import { useDispatch, useSelector } from "react-redux"
-import { Link } from "react-router-dom"
-import Swal from "sweetalert2"
-import { deleteProfile, getAllUsers } from "../../redux/apiCalls/profileApiCall"
-import { GridLoader } from "react-spinners"
-import { logoutUser } from "../../redux/apiCalls/authApiCall"
+import { Link } from 'react-router-dom'
+import Swal from 'sweetalert2'
+import { useUser } from '../../context/UserProvider'
+import { useDeleteProfile, useGetAllUsers } from '../../hooks/profileHooks'
+import { LoadingPlacholder } from '../CategoryPage/Category'
+import { useQueryClient } from '@tanstack/react-query'
+import { useLogout } from '../../hooks/authHooks'
+import { CircularProgress } from '@mui/material'
 
 const AdminUsers = () => {
-	const { users, loading } = useSelector(s => s.profile)
-	const { user: currentUser } = useSelector(s => s.auth)
+	const { user: currentUser } = useUser()
 
-	const dispatch = useDispatch()
-
-	useEffect(() => {
-		dispatch(getAllUsers())
-	}, [dispatch])
+	const { data: users, isLoading } = useGetAllUsers()
+	const deleteProfileMutation = useDeleteProfile()
+	const client = useQueryClient()
+	const logout = useLogout()
 
 	// Handle Delete User
 	const handleDelete = userId => {
 		Swal.fire({
-			title: "Are you sure?",
+			title: 'Are you sure?',
 			text: "You won't be able to revert this Account!",
-			icon: "warning",
+			icon: 'warning',
 			showCancelButton: true,
-			confirmButtonColor: "var(--dark-blue-color)",
-			iconColor: "red",
-			cancelButtonColor: "var(--red-color)",
-			confirmButtonText: "Yes, delete it!",
+			confirmButtonColor: 'var(--dark-blue-color)',
+			iconColor: 'red',
+			cancelButtonColor: 'var(--red-color)',
+			confirmButtonText: 'Yes, delete it!',
 		}).then(result => {
 			if (result.isConfirmed) {
-				dispatch(deleteProfile(userId))
-				if (userId === currentUser?._id) {
-					dispatch(logoutUser())
-				}
+				deleteProfileMutation.mutate(
+					{ userId },
+					{
+						onSuccess: () => {
+							client.setQueryData(['users'], old => old.filter(user => user._id !== userId))
+							if (userId === currentUser) logout.mutate()
+						},
+					},
+				)
 			}
 		})
 	}
 
-	if (loading) {
-		return (
-			<div
-				className="admin-table-wrapper"
-				style={{ height: "100%", display: "flex", justifyContent: "center", alignItems: "center" }}
-			>
-				<GridLoader color="#36d7b7" size={30} />
-			</div>
-		)
+	if (isLoading) {
+		return <LoadingPlacholder newClass="admin-table-wrapper" />
 	}
+
 	return (
 		<div className="admin-table-wrapper">
-			<h2>Users</h2>
+			{deleteProfileMutation.isLoading ? <CircularProgress /> : <h2>Users</h2>}
 
 			<div className={`table-wrapper`}>
 				<table>
@@ -70,7 +68,7 @@ const AdminUsers = () => {
 								</td>
 								<td>
 									<div className="user">
-										<img src={user?.profilePhoto?.url} alt="" />
+										<img loading="lazy" src={user?.profilePhoto?.url} alt="" />
 										<span>{user?.username}</span>
 									</div>
 								</td>

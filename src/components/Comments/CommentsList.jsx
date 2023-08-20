@@ -1,10 +1,12 @@
-import "./CommentsList.scss"
-import React, { useState } from "react"
-import { UpdateCommentModal } from "./UpdateCommentModal"
-import { useDispatch, useSelector } from "react-redux"
-import { deleteComment } from "../../redux/apiCalls/commentApiCall"
-import Swal from "sweetalert2"
-import Moment from "react-moment"
+import './CommentsList.scss'
+import React, { useState } from 'react'
+import { UpdateCommentModal } from './UpdateCommentModal'
+import Swal from 'sweetalert2'
+import Moment from 'react-moment'
+import { useUser } from '../../context/UserProvider'
+import { useDeleteComment } from '../../hooks/commentHooks'
+import { useQueryClient } from '@tanstack/react-query'
+import { CircularProgress } from '@mui/material'
 
 const CommentsList = ({ comments }) => {
 	return (
@@ -25,26 +27,36 @@ const CommentsList = ({ comments }) => {
 }
 
 const Comment = ({ comment }) => {
-	const { user: currentUser } = useSelector(s => s.auth)
-
-	const dispatch = useDispatch()
+	const { user: currentUser } = useUser()
+	const deleteCommentMutation = useDeleteComment()
+	const client = useQueryClient()
 
 	const [showCommentModal, setShowCommentModal] = useState(false)
 
 	// Delete Comment Handler
 	const deleteCommentHandler = async commentId => {
 		Swal.fire({
-			title: "Are you sure?",
+			title: 'Are you sure?',
 			text: "You won't be able to revert this!",
-			icon: "warning",
+			icon: 'warning',
 			showCancelButton: true,
-			confirmButtonColor: "var(--dark-blue-color)",
-			iconColor: "red",
-			cancelButtonColor: "var(--red-color)",
-			confirmButtonText: "Yes, delete it!",
+			confirmButtonColor: 'var(--dark-blue-color)',
+			iconColor: 'red',
+			cancelButtonColor: 'var(--red-color)',
+			confirmButtonText: 'Yes, delete it!',
 		}).then(result => {
 			if (result.isConfirmed) {
-				dispatch(deleteComment(commentId))
+				deleteCommentMutation.mutate(
+					{ commentId },
+					{
+						onSuccess: () => {
+							client.setQueryData(['single-post', comment.postId], oldPost => ({
+								...oldPost,
+								comments: [...oldPost.comments].filter(c => c._id !== commentId),
+							}))
+						},
+					},
+				)
 			}
 		})
 	}
@@ -53,15 +65,16 @@ const Comment = ({ comment }) => {
 		<div className="comment">
 			<div className="comment-info">
 				<div className="user">
-					<img src={comment?.user?.profilePhoto?.url} alt="" />
+					<img loading="lazy" src={comment?.user?.profilePhoto?.url} alt="" />
 					<p>{comment?.username}</p>
 				</div>
 				<span>
 					<Moment fromNow ago>
 						{comment?.createdAt}
-					</Moment>{" "}
+					</Moment>{' '}
 					ago
 				</span>
+				{deleteCommentMutation.isLoading && <CircularProgress />}
 			</div>
 
 			<div className="content">{comment?.text}</div>

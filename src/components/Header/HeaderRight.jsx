@@ -1,22 +1,21 @@
-import React, { useState } from "react"
-import { useDispatch, useSelector } from "react-redux"
-import { Link, useLocation } from "react-router-dom"
-import { logoutUser } from "../../redux/apiCalls/authApiCall"
+import React, { useState } from 'react'
+import { Link, useLocation } from 'react-router-dom'
+import { useLogout } from '../../hooks/authHooks'
+import { useUser } from '../../context/UserProvider'
 
 const HeaderRight = () => {
-	const { user } = useSelector(state => state.auth)
-	const dispatch = useDispatch()
+	const logoutMutation = useLogout()
+	const { user } = useUser()
+	const { pathname: path } = useLocation()
 
 	const [showDropMenu, setShowDropMenu] = useState(false)
 
 	const toggleDropMenu = () => setShowDropMenu(p => !p)
 	const closeMenu = () => setShowDropMenu(false)
 
-	const { pathname: path } = useLocation()
-
 	const logout = () => {
 		closeMenu()
-		dispatch(logoutUser())
+		logoutMutation.mutate()
 	}
 
 	return (
@@ -25,10 +24,10 @@ const HeaderRight = () => {
 				<div className="header-right-user-info">
 					<div className="user-info" onClick={toggleDropMenu}>
 						<span>{user?.username}</span>
-						<img src={user?.profilePhoto?.url} alt="" />
+						<img loading="lazy" src={user?.profilePhoto?.url} alt="" />
 					</div>
 
-					<div className={`dropmenu ${showDropMenu ? "show-dropmenu" : ""}`}>
+					<div className={`dropmenu ${showDropMenu ? 'show-dropmenu' : ''}`}>
 						<Link className="item" to={`/profile/${user?._id}`} onClick={closeMenu}>
 							<span>Profile</span>
 							<i className="bi bi-file-person"></i>
@@ -46,13 +45,13 @@ const HeaderRight = () => {
 				</div>
 			) : (
 				<>
-					<Link to={"/login"} className={`header-right-link ${path === "/login" ? "active" : ""}`}>
+					<Link to={'/login'} className={`header-right-link ${path === '/login' ? 'active' : ''}`}>
 						<i className="bi bi-box-arrow-in-right"></i>
 						<span>Login</span>
 					</Link>
 					<Link
-						to={"/signup"}
-						className={`header-right-link signup ${path === "/signup" ? "active" : ""}`}
+						to={'/signup'}
+						className={`header-right-link signup ${path === '/signup' ? 'active' : ''}`}
 					>
 						<i className="bi bi-person-plus"></i>
 						<span>Signup</span>

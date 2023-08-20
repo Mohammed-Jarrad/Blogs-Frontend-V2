@@ -1,7 +1,7 @@
-import React, { useState } from "react"
-import { Link } from "react-router-dom"
-import "./PostItem.scss"
-import LikesModal from "../../pages/PostDetails/LikesModal"
+import React, { useState } from 'react'
+import { Link } from 'react-router-dom'
+import './PostItem.scss'
+import LikesModal from '../../pages/PostDetails/LikesModal'
 
 const PostItem = ({ post }) => {
 	const [showLikes, setShowLikes] = useState(false)
@@ -10,7 +10,7 @@ const PostItem = ({ post }) => {
 		<div className="post-item">
 			<div className="post-title">
 				<div className="user-info">
-					<img src={post?.user?.profilePhoto?.url} alt="" />
+					<img loading="lazy" src={post?.user?.profilePhoto?.url} alt="" />
 					<div className="user">
 						<Link to={`/profile/${post?.user._id}`}>{post?.user.username}</Link>
 						<p className="date">{new Date(post?.createdAt).toLocaleDateString()}</p>
@@ -20,7 +20,7 @@ const PostItem = ({ post }) => {
 			</div>
 
 			<div className="post-image">
-				<img src={post?.image.url} alt="" />
+				<img loading="lazy" src={post?.image.url} alt="" />
 			</div>
 
 			<div className="post-details">
@@ -28,7 +28,7 @@ const PostItem = ({ post }) => {
 					<div className="likes">
 						<span onClick={() => setShowLikes(true)}>
 							{`${post?.likes.length}`} like
-							{post?.likes.length > 1 ? "s" : ""}
+							{post?.likes.length > 1 ? 's' : ''}
 						</span>
 					</div>
 					<Link to={`/posts/categories/${post.category}`} className="category">
@@ -36,7 +36,7 @@ const PostItem = ({ post }) => {
 					</Link>
 				</div>
 				<div className="desc">
-					{post?.description?.split("\n").map((line, i) => (
+					{post?.description?.split('\n').map((line, i) => (
 						<p key={i}>{line}</p>
 					))}
 				</div>

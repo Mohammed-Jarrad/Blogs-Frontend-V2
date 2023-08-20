@@ -1,35 +1,33 @@
-import React, { useEffect, useState } from "react"
-import { useDispatch, useSelector } from "react-redux"
-import { toast } from "react-toastify"
-import { getAllCategories } from "../../redux/apiCalls/categoryApiCall"
-import { updatePostDetails } from "../../redux/apiCalls/postApiCall"
-import Modal from "../../components/Modal/Modal"
+import React, { useState } from 'react'
+import { toast } from 'react-toastify'
+import Modal from '../../components/Modal/Modal'
+import { useGetAllCategories } from '../../hooks/categoryHooks'
+import { useUpdatePostDetails } from '../../hooks/postHooks'
 
 export const UpdatePostModal = ({ closeModal, post }) => {
-	const { categories } = useSelector(s => s.category)
-
-	const dispatch = useDispatch()
+	const { data: categories } = useGetAllCategories()
+	const updatePostMutation = useUpdatePostDetails()
 
 	const [title, setTitle] = useState(post?.title)
 	const [description, setDescription] = useState(post?.description)
 	const [category, setCategory] = useState(post?.category)
 
-	useEffect(() => {
-		dispatch(getAllCategories())
-	}, [dispatch])
-
 	// form submit handler
 	const formSubmitHandler = e => {
 		e.preventDefault()
 
-		if (!title.trim()) return toast.error("Post Title is required")
-		if (!category.trim()) return toast.error("Post Category is required")
-		if (!description.trim()) return toast.error("Post Description is required")
+		if (!title.trim()) return toast.error('Post Title is required')
+		if (!category.trim()) return toast.error('Post Category is required')
+		if (!description.trim()) return toast.error('Post Description is required')
 
 		const updatedPost = { title, category, description }
 
-		dispatch(updatePostDetails(updatedPost, post?._id))
-		closeModal()
+		updatePostMutation.mutate(
+			{ postDetails: updatedPost, postId: post._id },
+			{
+				onSuccess: () => closeModal(),
+			},
+		)
 	}
 
 	return (
@@ -67,7 +65,7 @@ export const UpdatePostModal = ({ closeModal, post }) => {
 					/>
 				</label>
 
-				<button type="submit">Edit Post</button>
+				<button type="submit">{updatePostMutation.isLoading ? 'Loading...' : 'Edit Post'}</button>
 			</form>
 		</Modal>
 	)

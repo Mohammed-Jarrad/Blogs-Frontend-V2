@@ -1,38 +1,37 @@
-import React, { useEffect } from "react"
-import { useDispatch, useSelector } from "react-redux"
-import Swal from "sweetalert2"
-import { deleteCategory, getAllCategories } from "../../redux/apiCalls/categoryApiCall"
+import Swal from 'sweetalert2'
+import { useDeleteCategory, useGetAllCategories } from '../../hooks/categoryHooks'
+import { LoadingPlacholder } from '../CategoryPage/Category'
+import { CircularProgress } from '@mui/material'
 
 const AdminCategories = () => {
-	const { categories } = useSelector(s => s.category)
-
-	const dispatch = useDispatch()
-
-	useEffect(() => {
-		dispatch(getAllCategories())
-	}, [dispatch])
+	const categoriesQuery = useGetAllCategories()
+	const deleteCategoryMutation = useDeleteCategory()
 
 	// Handle Delete Categories
 	const handleDelete = categoryId => {
 		Swal.fire({
-			title: "Are you sure?",
+			title: 'Are you sure?',
 			text: "You won't be able to revert this Category!",
-			icon: "warning",
+			icon: 'warning',
 			showCancelButton: true,
-			confirmButtonColor: "var(--dark-blue-color)",
-			iconColor: "red",
-			cancelButtonColor: "var(--red-color)",
-			confirmButtonText: "Yes, delete it!",
+			confirmButtonColor: 'var(--dark-blue-color)',
+			iconColor: 'red',
+			cancelButtonColor: 'var(--red-color)',
+			confirmButtonText: 'Yes, delete it!',
 		}).then(result => {
 			if (result.isConfirmed) {
-				dispatch(deleteCategory(categoryId))
+				deleteCategoryMutation.mutate(categoryId)
 			}
 		})
 	}
 
+	if (categoriesQuery.isLoading) {
+		return <LoadingPlacholder newClass={'admin-table-wrapper'} />
+	}
+
 	return (
 		<div className="admin-table-wrapper">
-			<h2>Categories</h2>
+			{deleteCategoryMutation.isLoading ? <CircularProgress size={60} /> : <h2>Categories</h2>}
 
 			<div className={`table-wrapper`}>
 				<table>
@@ -45,7 +44,7 @@ const AdminCategories = () => {
 					</thead>
 
 					<tbody>
-						{categories?.map((item, index) => (
+						{categoriesQuery.data?.map((item, index) => (
 							<tr key={index}>
 								<td>
 									<div className="count">{index + 1}</div>

@@ -1,26 +1,18 @@
-import { Link, useParams } from "react-router-dom"
-import "./VerifyEmail.scss"
-import { useDispatch, useSelector } from "react-redux"
-import { useEffect } from "react"
-import { verifyEmail } from "../../redux/apiCalls/authApiCall"
-import { GridLoader } from "react-spinners"
+import { Link, useParams } from 'react-router-dom'
+import './VerifyEmail.scss'
+import { GridLoader } from 'react-spinners'
+import { useVerifyEmail } from '../../hooks/authHooks'
 
 const VerifyEmail = () => {
-	const dispatch = useDispatch()
-
-	const { loading, isEmailVerified } = useSelector(s => s.auth)
-
 	const { token } = useParams()
 
-	useEffect(() => {
-		dispatch(verifyEmail(token))
-	}, [dispatch, token])
+	const { data, isLoading } = useVerifyEmail(token)
 
-	if (loading) {
+	if (isLoading) {
 		return (
 			<div
 				className="verify-email container"
-				style={{ display: "flex", alignItems: "center", justifyContent: "center" }}
+				style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
 			>
 				<GridLoader color="#36d7b7" size={30} />
 				<h2>Verification...</h2>
@@ -30,11 +22,11 @@ const VerifyEmail = () => {
 
 	return (
 		<section className="verify-email container">
-			{isEmailVerified === true ? (
+			{data.isVerified === true ? (
 				<>
 					<i className="bi bi-patch-check"></i>
-					<h1 className="title">Your Email has been successfully verified</h1>
-					<Link to={"/login"}>Go to login page</Link>
+					<h1 className="title">{data.message}</h1>
+					<Link to={'/login'}>Go to login page</Link>
 				</>
 			) : (
 				<>

@@ -1,50 +1,25 @@
-import React, { useEffect, useState } from "react"
-import { useDispatch, useSelector } from "react-redux"
-import { useNavigate, useParams } from "react-router-dom"
-import { toast } from "react-toastify"
-import { checkResestLink, resetPassword } from "../../redux/apiCalls/passwordApiCall"
-import { CircularProgress } from "@mui/material"
-import Swal from "sweetalert2"
-import { passwordActions } from "../../redux/slices/passwordSlice"
+import React, { useState } from 'react'
+import { useParams } from 'react-router-dom'
+import { toast } from 'react-toastify'
+import { CircularProgress } from '@mui/material'
+import { useCheckResetLink, useResetPassword } from '../../hooks/passwordHook'
 
 const ResetPassword = () => {
 	const { userId, token } = useParams()
-	const dispatch = useDispatch()
-	const { isValidLink, loading, isReset } = useSelector(s => s.password)
 
-	const [password, setPassword] = useState("")
-	const navigate = useNavigate()
+	const checkPassword = useCheckResetLink(userId, token)
+	const resetPasswordMutation = useResetPassword()
 
-	// check reset link validation
-	useEffect(() => {
-		dispatch(checkResestLink(userId, token))
-	}, [dispatch, userId, token])
+	const [password, setPassword] = useState('')
 
 	const submitHandler = e => {
 		e.preventDefault()
 
-		if (!password.trim()) return toast.error("Password is required!")
-
-		dispatch(resetPassword(userId, token, { password }))
+		if (!password.trim()) return toast.error('Password is required!')
+		resetPasswordMutation.mutate({ userId, token, password })
 	}
 
-	if (isReset) {
-		Swal.fire({
-			title: "Your password reset successfully",
-			text: "Go to login page",
-			icon: "success",
-			confirmButtonColor: "var(--green-color)",
-			iconColor: "var(--green-color)",
-			confirmButtonText: "Go!",
-		}).then(result => {
-			if (result.isConfirmed) {
-				navigate("/login")
-				dispatch(passwordActions.setIsReset(false))
-			}
-		})
-	}
-
-	if (!isValidLink) {
+	if (checkPassword.status === 'error') {
 		return (
 			<section className="login-page container">
 				<h1>Not Found</h1>
@@ -70,13 +45,13 @@ const ResetPassword = () => {
 					</div>
 
 					<button type="submit">
-						{loading ? (
-							<div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+						{resetPasswordMutation.isLoading ? (
+							<div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
 								Loading
 								<CircularProgress size={20} />
 							</div>
 						) : (
-							"Submit"
+							'Submit'
 						)}
 					</button>
 				</form>

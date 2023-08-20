@@ -1,41 +1,25 @@
-import { useState } from "react"
-import "./Form.scss"
-import { Link } from "react-router-dom"
-import { toast } from "react-toastify"
-import { useDispatch, useSelector } from "react-redux"
-import { registerUser } from "../../redux/apiCalls/authApiCall"
-import Swal from "sweetalert2"
-import { authActions } from "../../redux/slices/authSlice"
+import { useState } from 'react'
+import './Form.scss'
+import { Link } from 'react-router-dom'
+import { toast } from 'react-toastify'
+import { useRegister } from '../../hooks/authHooks'
 
 const Signup = () => {
-	const [username, setUsername] = useState("")
-	const [email, setEmail] = useState("")
-	const [password, setPassword] = useState("")
+	const [username, setUsername] = useState('')
+	const [email, setEmail] = useState('')
+	const [password, setPassword] = useState('')
 
-	const dispatch = useDispatch()
-	const { registerMessage } = useSelector(state => state.auth)
+	const registerMutation = useRegister()
 
 	const register = e => {
 		e.preventDefault()
 
-		if (!username.trim()) return toast.error("Username is required!")
-		if (!email.trim()) return toast.error("Email is required!")
-		if (!password.trim()) return toast.error("Password is required!")
+		if (!username.trim()) return toast.error('Username is required!')
+		if (!email.trim()) return toast.error('Email is required!')
+		if (!password.trim()) return toast.error('Password is required!')
 
 		const user = { username, email, password }
-		dispatch(registerUser(user))
-	}
-
-	if (registerMessage) {
-		Swal.fire({
-			title: registerMessage,
-			icon: "success",
-		}).then(result => {
-			if (result.isConfirmed) {
-				// navigate("/login")
-				dispatch(authActions.setRegisterMessage(null))
-			}
-		})
+		registerMutation.mutate(user)
 	}
 
 	return (
@@ -75,11 +59,11 @@ const Signup = () => {
 						/>
 					</div>
 
-					<button type="submit">Register</button>
+					<button type="submit">{registerMutation.isLoading ? 'Loading...' : 'Signup'}</button>
 				</form>
 
 				<div className="form-footer">
-					Already have an account? <Link to={"/login"}>Login</Link>
+					Already have an account? <Link to={'/login'}>Login</Link>
 				</div>
 			</div>
 		</section>

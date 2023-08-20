@@ -1,23 +1,15 @@
-import React, { useEffect } from "react"
-import "./Category.scss"
-import { useParams } from "react-router-dom"
-import PostsList from "../../components/PostsList/PostsList"
-import { useDispatch, useSelector } from "react-redux"
-import { fetchPostsByCategory } from "../../redux/apiCalls/postApiCall"
-import ContentLoader from "react-content-loader"
+import './Category.scss'
+import { useParams } from 'react-router-dom'
+import PostsList from '../../components/PostsList/PostsList'
+import ContentLoader from 'react-content-loader'
+import { useGetPostsByCategory } from '../../hooks/postHooks'
 
 const Category = () => {
 	const { category } = useParams()
+	const { isLoading, data: categoryPosts } = useGetPostsByCategory(category)
 
-	const dispatch = useDispatch()
-	const { categoryPosts, categoryPostsLoading } = useSelector(s => s.post)
-
-	useEffect(() => {
-		dispatch(fetchPostsByCategory(category))
-	}, [category, dispatch])
-
-	if (categoryPostsLoading) {
-		return <LoadingPlacholder newClass={"container category-page"} />
+	if (isLoading) {
+		return <LoadingPlacholder newClass={'container category-page'} />
 	}
 
 	return (
@@ -38,11 +30,11 @@ const Category = () => {
 
 export const LoadingPlacholder = ({ newClass }) => {
 	return (
-		<div className={`${newClass ? newClass : ""}`}>
+		<div className={`${newClass ? newClass : ''}`}>
 			<ContentLoader
 				viewBox="0 0 400 475"
-				height={"100%"}
-				width={"100%"}
+				height={'100%'}
+				width={'100%'}
 				preserveAspectRatio="none"
 				backgroundColor="#cfe8f7"
 				foregroundColor="#ecebeb"

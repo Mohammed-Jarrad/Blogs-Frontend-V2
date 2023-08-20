@@ -1,38 +1,48 @@
-import React, { useEffect } from "react"
-import { useDispatch, useSelector } from "react-redux"
-import Swal from "sweetalert2"
-import { deleteComment, getAllComments } from "../../redux/apiCalls/commentApiCall"
+import Swal from 'sweetalert2'
+import { useDeleteComment, useGetAllComments } from '../../hooks/commentHooks'
+import { useQueryClient } from '@tanstack/react-query'
+import { CircularProgress } from '@mui/material'
+import { LoadingPlacholder } from '../CategoryPage/Category'
 
 const AdminComments = () => {
-	const { comments } = useSelector(s => s.comment)
-
-	const dispatch = useDispatch()
-
-	useEffect(() => {
-		dispatch(getAllComments())
-	}, [dispatch])
+	const { data: comments, isLoading } = useGetAllComments()
+	const deleteCommentMutation = useDeleteComment()
+	const client = useQueryClient()
 
 	// Handle Delete Comment
 	const handleDelete = commentId => {
 		Swal.fire({
-			title: "Are you sure?",
+			title: 'Are you sure?',
 			text: "You won't be able to revert this Comment!",
-			icon: "warning",
+			icon: 'warning',
 			showCancelButton: true,
-			confirmButtonColor: "var(--dark-blue-color)",
-			iconColor: "red",
-			cancelButtonColor: "var(--red-color)",
-			confirmButtonText: "Yes, delete it!",
+			confirmButtonColor: 'var(--dark-blue-color)',
+			iconColor: 'red',
+			cancelButtonColor: 'var(--red-color)',
+			confirmButtonText: 'Yes, delete it!',
 		}).then(result => {
 			if (result.isConfirmed) {
-				dispatch(deleteComment(commentId))
+				deleteCommentMutation.mutate(
+					{ commentId },
+					{
+						onSuccess: () => {
+							client.setQueryData(['comments'], oldComments => {
+								return [...oldComments].filter(c => c._id !== commentId)
+							})
+						},
+					},
+				)
 			}
 		})
 	}
 
+	if (isLoading) {
+		return <LoadingPlacholder newClass="admin-table-wrapper" />
+	}
+
 	return (
 		<div className="admin-table-wrapper">
-			<h2>Comments</h2>
+			{deleteCommentMutation.isLoading ? <CircularProgress /> : <h2>Comments</h2>}
 
 			<div className={`table-wrapper`}>
 				<table>
@@ -53,7 +63,7 @@ const AdminComments = () => {
 								</td>
 								<td>
 									<div className="user">
-										<img src={comment?.user?.profilePhoto?.url} alt="" />
+										<img loading="lazy" src={comment?.user?.profilePhoto?.url} alt="" />
 										<span>{comment?.username}</span>
 									</div>
 								</td>

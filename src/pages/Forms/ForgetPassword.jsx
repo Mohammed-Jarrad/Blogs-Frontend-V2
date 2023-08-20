@@ -1,21 +1,17 @@
-import React, { useState } from "react"
-import { useDispatch, useSelector } from "react-redux"
-import { toast } from "react-toastify"
-import { sendResetPasswordLink } from "../../redux/apiCalls/passwordApiCall"
-import { CircularProgress } from "@mui/material"
+import React, { useState } from 'react'
+import { toast } from 'react-toastify'
+import { useSendResetPasswordLink } from '../../hooks/passwordHook'
 
 const ForgetPassword = () => {
-	const [email, setEmail] = useState("")
+	const sendResetLink = useSendResetPasswordLink()
 
-	const dispatch = useDispatch()
-	const { loading } = useSelector(s => s.password)
+	const [email, setEmail] = useState('')
 
 	const formHandler = e => {
 		e.preventDefault()
 
-		if (!email.trim()) return toast.error("Email is required!")
-
-		dispatch(sendResetPasswordLink({ email }))
+		if (!email.trim()) return toast.error('Email is required!')
+		sendResetLink.mutate({ email })
 	}
 
 	return (
@@ -35,16 +31,7 @@ const ForgetPassword = () => {
 						/>
 					</div>
 
-					<button type="submit">
-						{loading ? (
-							<div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-								Loading
-								<CircularProgress size={20} />
-							</div>
-						) : (
-							"Submit"
-						)}
-					</button>
+					<button type="submit">{sendResetLink.isLoading ? 'Loading...' : 'Submit'}</button>
 				</form>
 			</div>
 		</section>

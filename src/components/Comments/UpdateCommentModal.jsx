@@ -1,23 +1,24 @@
-import React, { useState } from "react"
-import { useDispatch } from "react-redux"
-import { toast } from "react-toastify"
-import { updateComment } from "../../redux/apiCalls/commentApiCall"
-import Modal from "../Modal/Modal"
+import React, { useState } from 'react'
+import { toast } from 'react-toastify'
+import Modal from '../Modal/Modal'
+import { useUpdateComment } from '../../hooks/commentHooks'
 
 export const UpdateCommentModal = ({ closeModal, comment }) => {
+	const updateCommentMutation = useUpdateComment()
 	const [text, setText] = useState(comment?.text)
-
-	const dispatch = useDispatch()
 
 	// form submit handler
 	const formSubmitHandler = e => {
 		e.preventDefault()
 
-		if (!text.trim()) return toast.error("Please write something")
+		if (!text.trim()) return toast.error('Please write something')
 
-		dispatch(updateComment(comment?._id, { text }))
-
-		closeModal()
+		updateCommentMutation.mutate(
+			{ commentId: comment._id, text },
+			{
+				onSuccess: () => closeModal(),
+			},
+		)
 	}
 
 	return (
@@ -39,7 +40,9 @@ export const UpdateCommentModal = ({ closeModal, comment }) => {
 					/>
 				</label>
 
-				<button type="submit">Edit Comment</button>
+				<button type="submit">
+					{updateCommentMutation.isLoading ? 'Loading...' : 'Edit Comment'}
+				</button>
 			</form>
 		</Modal>
 	)

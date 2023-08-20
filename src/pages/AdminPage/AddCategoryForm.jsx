@@ -1,20 +1,19 @@
-import React, { useState } from "react"
-import { useDispatch } from "react-redux"
-import { toast } from "react-toastify"
-import { createCategory } from "../../redux/apiCalls/categoryApiCall"
+import React, { useState } from 'react'
+import { toast } from 'react-toastify'
+import { useCreateCategory } from '../../hooks/categoryHooks'
+import { CircularProgress } from '@mui/material'
 
 const AddCategoryForm = () => {
-	const [title, setTitle] = useState("")
-
-	const dispatch = useDispatch()
+	const [title, setTitle] = useState('')
+	const createCategoryMutation = useCreateCategory()
 
 	// handle form Submit
 	const formSubmitHandler = e => {
 		e.preventDefault()
 
-		if (!title.trim()) return toast.error("please enter a category")
+		if (!title.trim()) return toast.error('please enter a category')
 
-		dispatch(createCategory({ title }))
+		createCategoryMutation.mutate({ title })
 		setTitle('')
 	}
 
@@ -32,7 +31,9 @@ const AddCategoryForm = () => {
 					/>
 				</label>
 
-				<button type="submit">Add Category</button>
+				<button type="submit">
+					{createCategoryMutation.isLoading ? <CircularProgress /> : 'Add Category'}
+				</button>
 			</form>
 		</div>
 	)

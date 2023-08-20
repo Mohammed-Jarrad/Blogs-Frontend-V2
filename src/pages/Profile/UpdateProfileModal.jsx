@@ -1,15 +1,14 @@
-import React, { useState } from "react"
-import { useDispatch } from "react-redux"
-import { toast } from "react-toastify"
-import { updateProfile } from "../../redux/apiCalls/profileApiCall"
-import Modal from "../../components/Modal/Modal"
+import React, { useState } from 'react'
+import { toast } from 'react-toastify'
+import Modal from '../../components/Modal/Modal'
+import { useUpdateProfileDetails } from '../../hooks/profileHooks'
 
 const UpdateProfileModal = ({ closeModal, profile }) => {
-	const [username, setUsername] = useState(profile?.username)
-	const [bio, setBio] = useState(profile?.bio || "")
-	const [password, setPassword] = useState("")
+	const updateProfileMutation = useUpdateProfileDetails()
 
-	const dispatch = useDispatch()
+	const [username, setUsername] = useState(profile?.username)
+	const [bio, setBio] = useState(profile?.bio || '')
+	const [password, setPassword] = useState('')
 
 	// form submit handler
 	const formSubmitHandler = e => {
@@ -20,15 +19,19 @@ const UpdateProfileModal = ({ closeModal, profile }) => {
 			bio,
 		}
 
-		if (password.trim() !== "") {
+		if (password.trim() !== '') {
 			updatedUser.password = password
 		}
 
-		if (!username.trim()) return toast.error("username is required")
-		if (!bio.trim()) return toast.error("user bio is required")
+		if (!username.trim()) return toast.error('username is required')
+		if (!bio.trim()) return toast.error('user bio is required')
 
-		dispatch(updateProfile(profile._id, updatedUser))
-		closeModal()
+		updateProfileMutation.mutate(
+			{ userId: profile._id, profile: updatedUser },
+			{
+				onSuccess: () => closeModal(),
+			},
+		)
 	}
 
 	return (
@@ -64,7 +67,9 @@ const UpdateProfileModal = ({ closeModal, profile }) => {
 					/>
 				</label>
 
-				<button type="submit">Edit Profile</button>
+				<button type="submit">
+					{updateProfileMutation.isLoading ? 'Loading...' : 'Edit Profile'}
+				</button>
 			</form>
 		</Modal>
 	)

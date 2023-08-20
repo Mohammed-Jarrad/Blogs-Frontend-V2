@@ -1,23 +1,22 @@
-import React, { useState } from "react"
-import { Link } from "react-router-dom"
-import { toast } from "react-toastify"
-import { useDispatch } from "react-redux"
-import { loginUser } from "../../redux/apiCalls/authApiCall"
+import React, { useState } from 'react'
+import { Link } from 'react-router-dom'
+import { toast } from 'react-toastify'
+import { useLogin } from '../../hooks/authHooks'
 
 const Login = () => {
-	const [email, setEmail] = useState("")
-	const [password, setPassword] = useState("")
+	const [email, setEmail] = useState('')
+	const [password, setPassword] = useState('')
 
-	const dispatch = useDispatch()
+	const loginMutation = useLogin()
 
 	const login = e => {
 		e.preventDefault()
 
-		if (!email.trim()) return toast.error("Email is required!")
-		if (!password.trim()) return toast.error("Password is required!")
+		if (!email.trim()) return toast.error('Email is required!')
+		if (!password.trim()) return toast.error('Password is required!')
 
 		const user = { email, password }
-		dispatch(loginUser(user))
+		loginMutation.mutate(user)
 	}
 
 	return (
@@ -47,11 +46,11 @@ const Login = () => {
 						/>
 					</div>
 
-					<button type="submit">Login</button>
+					<button type="submit">{loginMutation.isLoading ? 'Loading...' : 'Login'}</button>
 				</form>
 
 				<div className="form-footer">
-					did you forget your password? <Link to={"/forget-password"}>forget password</Link>
+					did you forget your password? <Link to={'/forget-password'}>forget password</Link>
 				</div>
 			</div>
 		</section>

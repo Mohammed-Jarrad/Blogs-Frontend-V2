@@ -1,40 +1,32 @@
-import { useEffect, useState } from "react"
-import PostsList from "../../components/PostsList/PostsList"
-import "./Profile.scss"
-import Swal from "sweetalert2"
-import { toast } from "react-toastify"
-import UpdateProfileModal from "./UpdateProfileModal"
-import { useDispatch, useSelector } from "react-redux"
+import { useState } from 'react'
+import PostsList from '../../components/PostsList/PostsList'
+import './Profile.scss'
+import Swal from 'sweetalert2'
+import { toast } from 'react-toastify'
+import UpdateProfileModal from './UpdateProfileModal'
+import { useNavigate, useParams } from 'react-router-dom'
+import { GridLoader } from 'react-spinners'
+import Resizer from 'react-image-file-resizer'
+import { useUser } from '../../context/UserProvider'
 import {
-	deleteProfile,
-	getUserProfile,
-	uploadProfilePhoto,
-} from "../../redux/apiCalls/profileApiCall"
-import { useNavigate, useParams } from "react-router-dom"
-import { logoutUser } from "../../redux/apiCalls/authApiCall"
-import { GridLoader } from "react-spinners"
-import Resizer from "react-image-file-resizer"
+	useDeleteProfile,
+	useGetUserProfile,
+	useUpdateProfilePhoto,
+} from '../../hooks/profileHooks'
+import { useLogout } from '../../hooks/authHooks'
 
 const Profile = () => {
-	const dispatch = useDispatch()
+	const { id } = useParams()
+	const { user: currentUser } = useUser()
+
+	const { data: profile, isLoading } = useGetUserProfile(id)
+	const uploadImageMutation = useUpdateProfilePhoto()
+	const deleteProfileMutation = useDeleteProfile()
+	const logout = useLogout()
 	const navigate = useNavigate()
 
 	const [file, setFile] = useState(null)
 	const [showUpadteProfile, setShowUpdateProfile] = useState(false)
-
-	const { id } = useParams()
-	const { user: currentUser } = useSelector(s => s.auth)
-	const { profile, loading, isProfileDeleted } = useSelector(state => state.profile)
-
-	useEffect(() => {
-		dispatch(getUserProfile(id))
-	}, [id, dispatch])
-
-	useEffect(() => {
-		if (isProfileDeleted) {
-			navigate("/login")
-		}
-	}, [isProfileDeleted, navigate])
 
 	const resizeFile = async file => {
 		let resized = null
@@ -42,13 +34,13 @@ const Profile = () => {
 			file,
 			1000, // max width
 			1000, // max height
-			"JPEG", // compress format
+			'JPEG', // compress format
 			100, // quality
 			0, // rotation
 			uri => {
 				resized = uri
 			},
-			"base64", // output type
+			'base64', // output type
 		)
 
 		// Waiting until the resized variable is set
@@ -65,13 +57,13 @@ const Profile = () => {
 
 		if (resizedImage) {
 			// Convert base64 image to file object
-			const byteCharacters = atob(resizedImage.split(",")[1])
+			const byteCharacters = atob(resizedImage.split(',')[1])
 			const byteNumbers = new Array(byteCharacters.length)
 			for (let i = 0; i < byteCharacters.length; i++) {
 				byteNumbers[i] = byteCharacters.charCodeAt(i)
 			}
 			const byteArray = new Uint8Array(byteNumbers)
-			const imageFile = new Blob([byteArray], { type: "image/jpeg" })
+			const imageFile = new Blob([byteArray], { type: 'image/jpeg' })
 
 			setFile(imageFile)
 		}
@@ -80,36 +72,43 @@ const Profile = () => {
 	// Handle Image Upload
 	const handleImageUpload = e => {
 		e.preventDefault()
-		if (!file) return toast.error("no image provided")
+		if (!file) return toast.error('no image provided')
 		const formData = new FormData()
-		formData.append("image", file)
-		dispatch(uploadProfilePhoto(formData))
+		formData.append('image', file)
+		uploadImageMutation.mutate({ newPhoto: formData })
 	}
 
 	// Handle Delete Account
 	const handleDeleteAccount = userId => {
 		Swal.fire({
-			title: "Are you sure?",
+			title: 'Are you sure?',
 			text: "You won't be able to revert your account!",
-			icon: "warning",
+			icon: 'warning',
 			showCancelButton: true,
-			confirmButtonColor: "var(--dark-blue-color)",
-			iconColor: "red",
-			cancelButtonColor: "var(--red-color)",
-			confirmButtonText: "Yes, delete it!",
+			confirmButtonColor: 'var(--dark-blue-color)',
+			iconColor: 'red',
+			cancelButtonColor: 'var(--red-color)',
+			confirmButtonText: 'Yes, delete it!',
 		}).then(result => {
 			if (result.isConfirmed) {
-				dispatch(deleteProfile(userId))
-				dispatch(logoutUser())
+				deleteProfileMutation.mutate(
+					{ userId },
+					{
+						onSuccess: () => {
+							logout.mutate()
+							navigate('/')
+						},
+					},
+				)
 			}
 		})
 	}
 
-	if (loading) {
+	if (isLoading || deleteProfileMutation.isLoading) {
 		return (
 			<div
 				className="profile container"
-				style={{ display: "flex", alignItems: "center", justifyContent: "center" }}
+				style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
 			>
 				<GridLoader color="#36d7b7" size={30} />
 			</div>
@@ -120,7 +119,11 @@ const Profile = () => {
 		<section className="profile container">
 			<div className="profile-header">
 				<div className="image">
-					<img src={file ? URL.createObjectURL(file) : profile?.profilePhoto?.url} alt="" />
+					<img
+						loading="lazy"
+						src={file ? URL.createObjectURL(file) : profile?.profilePhoto?.url}
+						alt=""
+					/>
 
 					{currentUser && (
 						<>
@@ -131,7 +134,9 @@ const Profile = () => {
 									</label>
 
 									<input onChange={e => handleChangeImage(e)} type="file" name="file" id="file" />
-									<button type="submit">Upload</button>
+									<button type="submit">
+										{uploadImageMutation.isLoading ? 'Loading...' : 'Upload'}
+									</button>
 								</form>
 							)}
 						</>
@@ -150,7 +155,7 @@ const Profile = () => {
 					</div>
 
 					<div className="profile-bio">
-						{profile?.bio && profile?.bio.split("\n").map((line, i) => <p key={i}>{line}</p>)}
+						{profile?.bio && profile?.bio.split('\n').map((line, i) => <p key={i}>{line}</p>)}
 					</div>
 				</div>
 

@@ -1,5 +1,5 @@
-import { Link } from "react-router-dom"
-import Modal from "../../components/Modal/Modal"
+import { Link } from 'react-router-dom'
+import Modal from '../../components/Modal/Modal'
 
 const LikesModal = ({ closeModal, likes }) => {
 	return (
@@ -8,7 +8,7 @@ const LikesModal = ({ closeModal, likes }) => {
 				{likes?.map((like, index) => (
 					<div className="like" key={like?._id}>
 						<span>{index + 1}</span>
-						<img src={like?.profilePhoto?.url} alt="" />
+						<img loading="lazy" src={like?.profilePhoto?.url} alt="" />
 						<p>
 							<Link to={`/profile/${like._id}`}>{like?.username}</Link>
 							<i className="bi bi-hand-thumbs-up-fill"></i>

@@ -1,39 +1,46 @@
-import React, { useEffect } from "react"
-import { Link } from "react-router-dom"
-import Swal from "sweetalert2"
-import { useDispatch, useSelector } from "react-redux"
-import { deletePost, fetchAllPosts } from "../../redux/apiCalls/postApiCall"
+import { Link } from 'react-router-dom'
+import Swal from 'sweetalert2'
+import { useDeletePost, useGetAllPosts } from '../../hooks/postHooks'
+import { LoadingPlacholder } from '../CategoryPage/Category'
+import { CircularProgress } from '@mui/material'
+import { useQueryClient } from '@tanstack/react-query'
 
 const AdminPosts = () => {
-	const { posts } = useSelector(s => s.post)
-
-	const dispatch = useDispatch()
-
-	useEffect(() => {
-		dispatch(fetchAllPosts())
-	}, [dispatch])
+	const { data: posts, isLoading } = useGetAllPosts()
+	const deletePostMutation = useDeletePost()
+	const client = useQueryClient()
 
 	// Handle Delete Post
 	const handleDelete = postId => {
 		Swal.fire({
-			title: "Are you sure?",
+			title: 'Are you sure?',
 			text: "You won't be able to revert this Post!",
-			icon: "warning",
+			icon: 'warning',
 			showCancelButton: true,
-			confirmButtonColor: "var(--dark-blue-color)",
-			iconColor: "red",
-			cancelButtonColor: "var(--red-color)",
-			confirmButtonText: "Yes, delete it!",
+			confirmButtonColor: 'var(--dark-blue-color)',
+			iconColor: 'red',
+			cancelButtonColor: 'var(--red-color)',
+			confirmButtonText: 'Yes, delete it!',
 		}).then(result => {
 			if (result.isConfirmed) {
-				dispatch(deletePost(postId))
+				deletePostMutation.mutate(postId, {
+					onSuccess: () => {
+						client.setQueryData(['posts'], oldData =>
+							oldData ? [...oldData].filter(p => p._id !== postId) : oldData,
+						)
+					},
+				})
 			}
 		})
 	}
 
+	if (isLoading) {
+		return <LoadingPlacholder newClass={'admin-table-wrapper'} />
+	}
+
 	return (
 		<div className="admin-table-wrapper">
-			<h2>Posts</h2>
+			{deletePostMutation.isLoading ? <CircularProgress /> : <h2>Posts</h2>}
 
 			<div className={`table-wrapper`}>
 				<table>
@@ -54,7 +61,7 @@ const AdminPosts = () => {
 								</td>
 								<td>
 									<div className="user">
-										<img src={post?.user?.profilePhoto?.url} alt="" />
+										<img loading="lazy" src={post?.user?.profilePhoto?.url} alt="" />
 										<span>{post?.user?.username}</span>
 									</div>
 								</td>

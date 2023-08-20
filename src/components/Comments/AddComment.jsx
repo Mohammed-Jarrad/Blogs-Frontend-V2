@@ -1,22 +1,22 @@
-import React, { useState } from "react"
-import { toast } from "react-toastify"
-import "./AddComment.scss"
-import { useDispatch } from "react-redux"
-import { createComment } from "../../redux/apiCalls/commentApiCall"
+import React, { useState } from 'react'
+import { toast } from 'react-toastify'
+import './AddComment.scss'
+import { useCreateComment } from '../../hooks/commentHooks'
 
 const AddComment = ({ postId }) => {
-	const dispatch = useDispatch()
-	const [text, setText] = useState("")
+	const createCommentMutation = useCreateComment()
+	const { isLoading } = createCommentMutation
+	const [text, setText] = useState('')
 
 	// Add Comment Handler
 	const submitHandler = e => {
 		e.preventDefault()
 		if (!text) {
-			return toast.error("please write something")
+			return toast.error('please write something')
 		}
 		const comment = { postId, text }
-		dispatch( createComment(comment) )
-		setText("")
+		createCommentMutation.mutate({ comment }, {})
+		setText('')
 	}
 
 	return (
@@ -29,7 +29,7 @@ const AddComment = ({ postId }) => {
 					setText(e.target.value)
 				}}
 			/>
-			<button type="submit">Comment</button>
+			<button type="submit">{isLoading ? 'Loading...' : 'Comment'}</button>
 		</form>
 	)
 }
