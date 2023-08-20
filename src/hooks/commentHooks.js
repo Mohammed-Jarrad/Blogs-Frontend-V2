@@ -4,15 +4,12 @@ import { useUser } from '../context/UserProvider'
 
 export const useCreateComment = () => {
 	const client = useQueryClient()
-	const {
-		user: { token },
-	} = useUser()
-
+	const { user } = useUser()
 	return useMutation(
 		async ({ comment }) => {
 			const { data } = await req.post(`/api/comments`, comment, {
 				headers: {
-					Authorization: 'Bearer ' + token,
+					Authorization: 'Bearer ' + user?.token,
 				},
 			})
 			return data
@@ -39,9 +36,7 @@ export const useCreateComment = () => {
 
 export const useUpdateComment = () => {
 	const client = useQueryClient()
-	const {
-		user: { token },
-	} = useUser()
+	const { user } = useUser()
 
 	return useMutation(
 		async ({ commentId, text }) => {
@@ -50,7 +45,7 @@ export const useUpdateComment = () => {
 				{ text },
 				{
 					headers: {
-						Authorization: 'Bearer ' + token,
+						Authorization: 'Bearer ' + user?.token,
 					},
 				},
 			)
@@ -77,14 +72,12 @@ export const useUpdateComment = () => {
 }
 
 export const useDeleteComment = () => {
-	const {
-		user: { token },
-	} = useUser()
+	const { user } = useUser()
 
 	return useMutation(async ({ commentId }) => {
 		const { data } = await req.delete(`/api/comments/${commentId}`, {
 			headers: {
-				Authorization: 'Bearer ' + token,
+				Authorization: 'Bearer ' + user?.token,
 			},
 		})
 		return data
@@ -92,15 +85,13 @@ export const useDeleteComment = () => {
 }
 
 export const useGetAllComments = () => {
-	const {
-		user: { token },
-	} = useUser()
+	const { user } = useUser()
 	return useQuery({
 		queryKey: ['comments'],
 		queryFn: async () => {
 			const { data } = await req.get('/api/comments', {
 				headers: {
-					Authorization: 'Bearer ' + token,
+					Authorization: 'Bearer ' + user?.token,
 				},
 			})
 			return data
@@ -109,15 +100,13 @@ export const useGetAllComments = () => {
 }
 
 export const useGetCommentsCount = () => {
-	const {
-		user: { token },
-	} = useUser()
+	const { user } = useUser()
 	return useQuery({
 		queryKey: ['comments-count'],
 		queryFn: async () => {
 			const { data } = await req.get('/api/comments/count', {
 				headers: {
-					Authorization: 'Bearer ' + token,
+					Authorization: 'Bearer ' + user?.token,
 				},
 			})
 			return data

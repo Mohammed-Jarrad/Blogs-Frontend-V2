@@ -15,15 +15,13 @@ export const useGetAllCategories = () => {
 
 export const useCreateCategory = () => {
 	const client = useQueryClient()
-	const {
-		user: { token },
-	} = useUser()
+	const { user } = useUser()
 
 	return useMutation(
 		async category => {
 			const { data } = await req.post(`/api/categories`, category, {
 				headers: {
-					Authorization: 'Bearer ' + token,
+					Authorization: 'Bearer ' + user?.token,
 				},
 			})
 			return data
@@ -39,14 +37,12 @@ export const useCreateCategory = () => {
 
 export const useDeleteCategory = () => {
 	const client = useQueryClient()
-	const {
-		user: { token },
-	} = useUser()
+	const { user } = useUser()
 	return useMutation(
 		async categoryId => {
 			const { data } = await req.delete(`/api/categories/${categoryId}`, {
 				headers: {
-					Authorization: 'Bearer ' + token,
+					Authorization: 'Bearer ' + user?.token,
 				},
 			})
 			return data

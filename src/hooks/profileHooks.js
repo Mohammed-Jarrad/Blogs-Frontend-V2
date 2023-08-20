@@ -20,7 +20,7 @@ export const useUpdateProfilePhoto = () => {
 		async ({ newPhoto }) => {
 			const { data } = await req.post(`/api/users/profile/profile-photo-upload`, newPhoto, {
 				headers: {
-					Authorization: 'Bearer ' + user.token,
+					Authorization: 'Bearer ' + user?.token,
 					'Content-Type': 'multipart/form-data',
 				},
 			})
@@ -49,7 +49,7 @@ export const useUpdateProfileDetails = () => {
 		async ({ userId, profile }) => {
 			const { data } = await req.put(`/api/users/profile/${userId}`, profile, {
 				headers: {
-					Authorization: 'Bearer ' + user.token,
+					Authorization: 'Bearer ' + user?.token,
 				},
 			})
 			return data
@@ -69,7 +69,7 @@ export const useDeleteProfile = () => {
 		async ({ userId }) => {
 			const { data } = await req.delete(`/api/users/profile/${userId}`, {
 				headers: {
-					Authorization: 'Bearer ' + user.token,
+					Authorization: 'Bearer ' + user?.token,
 				},
 			})
 			return data
@@ -89,7 +89,7 @@ export const useGetUsersCount = () => {
 		queryFn: async () => {
 			const { data } = await req.get(`/api/users/count`, {
 				headers: {
-					Authorization: 'Bearer ' + user.token,
+					Authorization: 'Bearer ' + user?.token,
 				},
 			})
 			return data
@@ -104,7 +104,7 @@ export const useGetAllUsers = () => {
 		queryFn: async () => {
 			const { data } = await req.get(`/api/users/profile`, {
 				headers: {
-					Authorization: 'Bearer ' + user.token,
+					Authorization: 'Bearer ' + user?.token,
 				},
 			})
 			return data

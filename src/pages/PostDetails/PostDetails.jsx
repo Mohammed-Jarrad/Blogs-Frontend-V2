@@ -72,7 +72,7 @@ const PostDetails = () => {
 		}
 	}
 
-	//  Update Image Submit Handler
+	// Update Image Submit Handler
 	const updateImageSubmitHandler = e => {
 		e.preventDefault()
 		if (!file) return toast.warning('there is no file provided')

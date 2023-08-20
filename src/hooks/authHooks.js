@@ -5,7 +5,6 @@ import { useUser } from '../context/UserProvider.js'
 
 export const useLogin = () => {
 	const { setUser } = useUser()
-
 	return useMutation(
 		async user => {
 			const { data } = await req.post('/api/auth/login', user)

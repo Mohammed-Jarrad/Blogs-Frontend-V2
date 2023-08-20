@@ -57,14 +57,12 @@ export const useGetSinglePost = postId => {
 export const useCreatePost = () => {
 	const client = useQueryClient()
 	const navigate = useNavigate()
-	const {
-		user: { token },
-	} = useUser()
+	const { user } = useUser()
 	return useMutation(
 		async post => {
 			const { data } = await req.post(`/api/posts`, post, {
 				headers: {
-					Authorization: 'Bearer ' + token,
+					Authorization: 'Bearer ' + user?.token,
 					'Content-Type': 'multipart/form',
 				},
 			})
@@ -82,14 +80,12 @@ export const useCreatePost = () => {
 }
 
 export const useDeletePost = () => {
-	const {
-		user: { token },
-	} = useUser()
+	const { user } = useUser()
 	return useMutation(
 		async postId => {
 			const { data } = await req.delete(`/api/posts/${postId}`, {
 				headers: {
-					Authorization: 'Bearer ' + token,
+					Authorization: 'Bearer ' + user?.token,
 				},
 			})
 			return data
@@ -104,14 +100,12 @@ export const useDeletePost = () => {
 
 export const useUpdatePostImage = () => {
 	const client = useQueryClient()
-	const {
-		user: { token },
-	} = useUser()
+	const { user } = useUser()
 	return useMutation(
 		async ({ image, postId }) => {
 			const { data } = await req.put(`/api/posts/update-image/${postId}`, image, {
 				headers: {
-					Authorization: 'Bearer ' + token,
+					Authorization: 'Bearer ' + user?.token,
 					'Content-Type': 'multipart/form',
 				},
 			})
@@ -135,14 +129,12 @@ export const useUpdatePostImage = () => {
 
 export const useUpdatePostDetails = () => {
 	const client = useQueryClient()
-	const {
-		user: { token },
-	} = useUser()
+	const { user } = useUser()
 	return useMutation(
 		async ({ postDetails, postId }) => {
 			const { data } = await req.put(`/api/posts/${postId}`, postDetails, {
 				headers: {
-					Authorization: 'Bearer ' + token,
+					Authorization: 'Bearer ' + user?.token,
 				},
 			})
 			return data
@@ -150,7 +142,7 @@ export const useUpdatePostDetails = () => {
 		{
 			onSuccess: data => {
 				// update single post cache
-				client.setQueryData(['single-post', data._id], oldData => data)
+				client.setQueryData(['single-post', data._id], data)
 			},
 		},
 	)
@@ -158,9 +150,7 @@ export const useUpdatePostDetails = () => {
 
 export const useTogglePostLike = () => {
 	const client = useQueryClient()
-	const {
-		user: { token },
-	} = useUser()
+	const { user } = useUser()
 	return useMutation(
 		async postId => {
 			const { data } = await req.put(
@@ -168,7 +158,7 @@ export const useTogglePostLike = () => {
 				{},
 				{
 					headers: {
-						Authorization: 'Bearer ' + token,
+						Authorization: 'Bearer ' + user?.token,
 					},
 				},
 			)
